@@ -111,7 +111,17 @@ public class Base {
 		}
 	}
 
-	// インデックス（三角形）を追加する.
+	// インデックスを追加する.
+	public void		addIndex(int submesh_index, int index)
+	{
+		this.sub_meshes[submesh_index].indices.Add(index);
+	}
+	public void		addIndex(int index)
+	{
+		this.addIndex(this.sub_meshes.Count - 1, index);
+	}
+
+	// インデックスを三つ（三角形）追加する.
 	public void		addTriangle(int submesh_index, int index0, int index1, int index2)
 	{
 		this.sub_meshes[submesh_index].indices.Add(index0);

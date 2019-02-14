@@ -391,6 +391,11 @@ Prefab:
       propertyPath: m_RootOrder
       value: 8
       objectReference: {fileID: 0}
+    - target: {fileID: 20787141416460030, guid: 7e053339d3d9d8a4aa865f95c132a996,
+        type: 2}
+      propertyPath: near clip plane
+      value: 0.3
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 7e053339d3d9d8a4aa865f95c132a996, type: 2}
   m_IsPrefabParent: 0
@@ -509,7 +514,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!64 &1031546464
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -653,7 +658,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!64 &1199480637
 MeshCollider:
   m_ObjectHideFlags: 0

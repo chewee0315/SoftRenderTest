@@ -17,6 +17,8 @@ public class TestSceneRoot : MonoBehaviour {
 	public Material	material;
 	public Material	_3d_material;
 
+	public SoftRender.Root	sf_root;
+
 	// ================================================================ //
 	// MonoBehaviour からの継承.
 	
@@ -27,6 +29,9 @@ public class TestSceneRoot : MonoBehaviour {
 		this.mesh = this.model.GetComponent<MeshFilter>().sharedMesh;
 
 this._3d_material = this.model.GetComponent<MeshRenderer>().material;
+
+		this.sf_root = new SoftRender.Root();
+		this.sf_root.setCameras(this.pers_camera, this.ortho_camera);
 	}
 	
 	void	Start()
@@ -35,23 +40,10 @@ this._3d_material = this.model.GetComponent<MeshRenderer>().material;
 	
 	void	Update()
 	{
-		//this.pers_camera.
-
-		//dbDraw.get().setModelMatrixTRS(this.model.transform);
-
-		Matrix4x4	c_view_mat_ortho = this.ortho_camera.worldToCameraMatrix;
-		Matrix4x4	c_view_mat_pers  = this.pers_camera.worldToCameraMatrix;
-		Matrix4x4	c_proj_mat_ortho = this.ortho_camera.projectionMatrix;
-		Matrix4x4	c_proj_mat_pers  = this.pers_camera.projectionMatrix;
-
-		c_proj_mat_ortho = TestSceneRoot.convert_projection_matrix(c_proj_mat_ortho);
-		c_proj_mat_pers  = TestSceneRoot.convert_projection_matrix(c_proj_mat_pers);
-
-		Matrix4x4	c_proj_mat_hybrid = c_proj_mat_ortho;
-
 		List<Vector3>	position_2ds = new List<Vector3>();
+		List<float>		depthes = new List<float>();
 
-//dbPrint.setLocate(5, 5);
+dbPrint.setLocate(5, 5);
 
 		for(int i = 0;i < this.mesh.vertices.Length;i++) {
 
@@ -59,13 +51,14 @@ this._3d_material = this.model.GetComponent<MeshRenderer>().material;
 
 			position = this.model.transform.TransformPoint(position);
 
-		#if false
-			position = this.pers_camera.WorldToScreenPoint(position);
-			position -= new Vector3(Screen.width/2.0f, Screen.height/2.0f, 0.0f);
-			position.z = 0.0f;
-		#else
+			float	depth = 0.0f;
 
-			float	depth = this.pers_camera.transform.InverseTransformPoint(position).z;
+			position = this.sf_root.view_mat_pers.MultiplyPoint(position);
+			position = this.sf_root.proj_mat_pers.MultiplyPoint(position);
+
+			depth = position.z;
+
+		#if false
 
 			position = this.pers_camera.WorldToViewportPoint(position);
 			position.x *= this.ortho_camera.orthographicSize*2.0f*Screen.width/Screen.height;
@@ -74,16 +67,17 @@ this._3d_material = this.model.GetComponent<MeshRenderer>().material;
 			position -= new Vector3(this.ortho_camera.orthographicSize*Screen.width/Screen.height, this.ortho_camera.orthographicSize, 0.0f);
 
 			position = this.ortho_camera.transform.TransformPoint(position);
-			position.z = this.ortho_camera.nearClipPlane;
-			//position.z = depth + this.depth_offset;
-
-//position = c_view_mat_ortho.MultiplyPoint(position);
 		#endif
 
-//dbPrint.print(position.x + " " + position.y + " " + position.z);
+			depthes.Add(depth);
+
+			position.z = this.ortho_camera.nearClipPlane;
+
+dbPrint.print(position.x + " " + position.y + " " + position.z + " " + depth);
 
 			position_2ds.Add(position);
 		}
+
 
 	#if false
 		{
@@ -121,9 +115,11 @@ this._3d_material = this.model.GetComponent<MeshRenderer>().material;
 
 			builder.uvs.Add(uv);
 		}
-
+		for(int i = 0;i < depthes.Count;i++) {
+			builder.uvs2.Add(new Vector2(depthes[i], 0.0f));
+		}
 		for(int i = 0;i < this.mesh.triangles.Length;i++) {
-			builder.sub_meshes[0].indices.Add(this.mesh.triangles[i]);
+			builder.addIndex(this.mesh.triangles[i]);
 		}
 
 		builder.instantiate();
@@ -132,70 +128,13 @@ this._3d_material = this.model.GetComponent<MeshRenderer>().material;
 
 
 
-		this.material.SetMatrix("_c_view_matrix", c_view_mat_ortho);
-		this.material.SetMatrix("_c_proj_matrix", c_proj_mat_hybrid);
+		this.material.SetMatrix("_c_view_matrix", this.sf_root.view_mat_ortho);
+		this.material.SetMatrix("_c_proj_matrix", this.sf_root.proj_mat_hybrid);
 
 		//this._3d_material.SetMatrix("_c_view_matrix", c_view_mat_pers);
 		//this._3d_material.SetMatrix("_c_proj_matrix", c_proj_mat_pers);
 
 		Graphics.DrawMesh(builder.mesh, Matrix4x4.identity, this.material, LayerMask.NameToLayer("SoftRender 2D"), this.ortho_camera);
 		//Graphics.DrawMesh(this.mesh, Matrix4x4.identity, this.material, LayerMask.NameToLayer("Default"), this.pers_camera);
-	}
-	protected static Matrix4x4		convert_projection_matrix(Matrix4x4 mat)
-	{
-		if(mat.m33 == 0.0f) {
-
-			mat.m11 = -mat.m11;
-			mat.m22 = -(mat.m22 + 1.0f)/2.0f;
-			mat.m23 = -mat.m23/2.0f;
-
-		} else {
-
-			mat.m11 = -mat.m11;
-			mat.m22 = -mat.m22/2.0f;
-			mat.m23 = -(mat.m23 - 1.0f)/2.0f;
-		}
-
-		return(mat);
-	}
-
-	protected static Matrix4x4	CreateProjectionMatrixPerspective(float fovy, float width_over_height, float znear, float zfar)
-	{
-		Matrix4x4	matrix = Matrix4x4.identity;
-
-		float		width, height;
-
-		height = Mathf.Tan(Mathf.Deg2Rad*fovy/2.0f);
-
-		width = height*width_over_height;
-
-		matrix.m00 = 1.0f/width;
-		matrix.m10 = 0.0f;
-		matrix.m20 = 0.0f;
-		matrix.m30 = 0.0f;
-
-		matrix.m01 = 0.0f;
-		matrix.m11 = 1.0f/height;
-matrix.m11 = -1.0f/height;
-		matrix.m21 = 0.0f;
-		matrix.m31 = 0.0f;
-
-		matrix.m02 = 0.0f;
-		matrix.m12 = 0.0f;
-		matrix.m22 = -zfar/(zfar - znear);
-matrix.m22 = znear/(zfar - znear);
-		matrix.m32 = -1.0f;
-		//matrix.m22 = -2.0f/(zfar - znear);
-		//matrix.m32 =  1.0f;
-
-		matrix.m03 =  0.0f;
-		matrix.m13 =  0.0f;
-		matrix.m23 = -zfar*znear/(zfar - znear);
-matrix.m23 = zfar*znear/(zfar - znear);
-		matrix.m33 =  0.0f;
-		//matrix.m23 = -(zfar + znear)/(zfar - znear);
-		//matrix.m33 =  0.0f;
-
-		return(matrix);
 	}
 }

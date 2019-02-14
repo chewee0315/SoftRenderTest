@@ -1,0 +1,47 @@
+○ Unity の謎挙動
+
+　・頂点シェーダーでマトリックスでの頂点トランスフォームをしない
+　・トライアングル中の全頂点の z 座標が、カメラの near クリップより小さい
+　・Graphics.DrawMesh()
+
+　こういうときに、トライアングルが描画されない
+
+　頂点シェーダーで、出力の z 値を描き替えてもだめ
+
+CPU)
+
+	カメラの nearClip = 0.3f
+
+	position_2ds[0] = new Vector3( 0.2f,  0.2f, 0.1f);
+	position_2ds[1] = new Vector3( 0.2f, -0.2f, 0.1f);
+	position_2ds[2] = new Vector3(-0.2f, -0.2f, 0.1f);
+	position_2ds[3] = new Vector3(-0.2f,  0.2f, 0.1f);
+
+	BuildMesh.Base	builder = new BuildMesh.Base();
+
+	for(int i = 0;i < position_2ds.Count;i++) {
+		builder.positions.Add(position_2ds[i]);
+	}
+
+	for(int i = 0;i < this.mesh.triangles.Length/2;i++) {
+		builder.sub_meshes[0].indices.Add(this.mesh.triangles[i]);
+	}
+
+	builder.instantiate();
+
+	Graphics.DrawMesh(builder.mesh, Matrix4x4.identity, this.material, LayerMask.NameToLayer("SoftRender 2D"), this.ortho_camera);
+
+シェーダー)
+
+			v2f		vert(appdata v)
+			{
+				v2f	o = (v2f)0;
+
+				o.vertex = v.vertex;
+
+				o.vertex.z = 0.1f;
+
+				o.uv = v.uv;
+
+				return(o);
+			}

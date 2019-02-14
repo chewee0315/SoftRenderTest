@@ -14,8 +14,8 @@ Shader "SoftRender/Test/2D"
 		}
 
 		Cull Off
-		ZWrite Off
-		ZTest Always
+		ZWrite On
+		ZTest LEqual
 		ColorMask RGBA
 		Blend SrcAlpha OneMinusSrcAlpha
 		LOD 100
@@ -35,6 +35,7 @@ Shader "SoftRender/Test/2D"
 			{
 				float4	vertex	: POSITION;
 				float2	uv		: TEXCOORD0;
+				float2	uv2		: TEXCOORD1;	// u:pers でのデプス.
 			};
 
 			struct v2f
@@ -42,6 +43,7 @@ Shader "SoftRender/Test/2D"
 				float4	vertex	: SV_POSITION;
 
 				float2	uv		: TEXCOORD0;
+				float4	color	: TEXCOORD1;
 			};
 
 			sampler2D	_MainTex;
@@ -57,13 +59,13 @@ Shader "SoftRender/Test/2D"
 
 				//o.vertex = UnityObjectToClipPos(o.vertex);
 				//o.vertex = mul(UNITY_MATRIX_M, o.vertex);
-				o.vertex = mul(_c_view_matrix, o.vertex);
-				o.vertex = mul(_c_proj_matrix, o.vertex);
+				//o.vertex = mul(_c_view_matrix, o.vertex);
+				//o.vertex = mul(_c_proj_matrix, o.vertex);
 
 				// 3D の描画との前後関係が破たんしないよう、Z値が Perspective と
 				// 同じになるようにする
 				//
-				//o.vertex.z /= -v.vertex.z;
+				o.vertex.z = v.uv2.x;
 
 				o.uv = v.uv;
 
@@ -73,6 +75,8 @@ Shader "SoftRender/Test/2D"
 			fixed4	frag(v2f i) : SV_Target
 			{
 				fixed4	col = tex2D(_MainTex, i.uv);
+
+				//col = fixed4(1.0f, 1.0f, 1.0f, 1.0f);
 
 				return(col);
 			}

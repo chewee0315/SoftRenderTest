@@ -123,15 +123,16 @@
     <Compile Include="Assets\Sequence\Script\SeqResultScene.cs" />
     <Compile Include="Assets\Sequence\Script\SeqTitleLayer.cs" />
     <Compile Include="Assets\Sequence\Script\SeqTitleScene.cs" />
+    <Compile Include="Assets\TestScene\SoftRenderRoot.cs" />
     <Compile Include="Assets\TestScene\TestSceneRoot.cs" />
     <None Include="Assets\Misc\Sprite2D\sprite2d_opaque.shader" />
     <None Include="Assets\Misc\Sprite2D\sprite2d_transparent.shader" />
     <None Include="Assets\SoftRender_Test_2D.shader" />
     <Reference Include="Unity.PackageManagerUI.Editor">
-      <HintPath>F:/work/unity/SoftRenderTest/Library/ScriptAssemblies/Unity.PackageManagerUI.Editor.dll</HintPath>
+      <HintPath>F:/work/Github/Unity/SoftRenderTest/SoftRenderTest/Library/ScriptAssemblies/Unity.PackageManagerUI.Editor.dll</HintPath>
     </Reference>
     <Reference Include="UnityEditor.StandardEvents">
-      <HintPath>F:/work/unity/SoftRenderTest/Library/ScriptAssemblies/UnityEditor.StandardEvents.dll</HintPath>
+      <HintPath>F:/work/Github/Unity/SoftRenderTest/SoftRenderTest/Library/ScriptAssemblies/UnityEditor.StandardEvents.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.AIModule">
       <HintPath>C:/Program Files/Unity/Editor/Data/Managed/UnityEngine/UnityEngine.AIModule.dll</HintPath>
